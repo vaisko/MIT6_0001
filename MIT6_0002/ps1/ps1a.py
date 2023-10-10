@@ -1,8 +1,8 @@
 ###########################
 # 6.0002 Problem Set 1a: Space Cows 
-# Name:
-# Collaborators:
-# Time:
+# Name: vaisko
+# Collaborators:N/A
+# Time: 23:48:59 10/10/2023 in Cologne
 
 from ps1_partition import get_partitions
 import time
@@ -62,18 +62,14 @@ def greedy_cow_transport(cows,limit=10):
     """
 
     return_list = []
-
     cowlist = [*cows.keys()]
     
     while cowlist:
-
         remaining = limit
         sublist = []
 
         while remaining >= 0:
-
             topcow = ''
-
             for cow in cowlist:
                 if cows.get(cow) <= remaining:
                     if not topcow:
@@ -114,7 +110,32 @@ def brute_force_cow_transport(cows,limit=10):
     transported on a particular trip and the overall list containing all the
     trips
     """
-    # TODO: Your code here
+    return_list = []
+    cowlist = [*cows.keys()]
+    min_trips = len(cowlist)
+
+    for partition in get_partitions(cowlist):
+        
+        is_valid = True
+
+        for sublist in partition:
+            sublist_weight = 0
+            for element in sublist:
+                sublist_weight += cows.get(element)
+            if sublist_weight > limit:
+                is_valid = False
+                break
+        
+        if len(partition)<min_trips and is_valid:
+            min_trips = len(partition)
+            return_list.clear()
+            return_list = partition
+
+    return return_list
+    
+                
+
+
     pass
         
 # Problem 4
@@ -131,10 +152,27 @@ def compare_cow_transport_algorithms():
     Returns:
     Does not return anything.
     """
-    # TODO: Your code here
-    pass
+
+    cows = load_cows("MIT6_0002/ps1/ps1_cow_data.txt")
+    
+    print(f'For list of {len(cows)} cows:\n\n')
+
+    startg = time.time()
+    greedy = greedy_cow_transport(cows,10)
+    endg = time.time()
+    
+    startb = time.time()
+    brute = brute_force_cow_transport(cows,10)
+    endb = time.time()
+
+    print(f'Greedy algorithm\n----\ntrips: {len(greedy)}\nruntime: {endg-startg}s\n\n')
+    print(f'Brute force algorithm\n----\ntrips: {len(brute)}\nruntime: {endb-startb}s\n\n')
+
+    return
 
 
 
 if __name__ == '__main__':
-    print(greedy_cow_transport(load_cows("MIT6_0002/ps1/ps1_cow_data.txt"),limit=10))
+
+    compare_cow_transport_algorithms()
+
