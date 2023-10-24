@@ -1,8 +1,8 @@
 ###########################
 # 6.0002 Problem Set 1b: Space Change
-# Name:
-# Collaborators:
-# Time:
+# Name: vaisko
+# Collaborators: vaisko.com
+# Time: 0.002s
 # Author: charz, cdenise
 
 #================================
@@ -22,15 +22,34 @@ def dp_make_weight(egg_weights, target_weight, memo = {}):
     
     Returns: int, smallest number of eggs needed to make target weight
     """
-    # TODO: Your code here
-    pass
+
+    if len(egg_weights) == 1:
+        return target_weight//egg_weights[0]
+
+    else:
+        return target_weight//egg_weights[-1] + dp_make_weight(egg_weights[:-1], target_weight - (target_weight//egg_weights[-1])*egg_weights[-1])
+            
 
 # EXAMPLE TESTING CODE, feel free to add more if you'd like
 if __name__ == '__main__':
     egg_weights = (1, 5, 10, 25)
     n = 99
-    print("Egg weights = (1, 5, 10, 25)")
-    print("n = 99")
+    print("Egg weights = ", egg_weights)
+    print("n = ", n)
     print("Expected ouput: 9 (3 * 25 + 2 * 10 + 4 * 1 = 99)")
     print("Actual output:", dp_make_weight(egg_weights, n))
-    print()
+    print("-"*40)
+
+    egg_weights = tuple(range(3, 500))
+    n = 250
+    print("Egg weights = ", egg_weights)
+    print("n = ", n)
+    print("Output:", dp_make_weight(egg_weights, n))
+    print("-"*40)
+
+    egg_weights = (7,8)
+    n = 456
+    print("Egg weights = ", egg_weights)
+    print("n = ", n)
+    print("Output:", dp_make_weight(egg_weights, n))
+    print("-"*40)
