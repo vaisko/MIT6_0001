@@ -2,11 +2,12 @@
 # Graph optimization
 # Name:
 # Collaborators:
-# Time:
+# Time: previše
 
 #
 # Finding shortest paths through MIT buildings
 #
+import copy
 import unittest
 from graph import Digraph, Node, WeightedEdge
 
@@ -19,8 +20,9 @@ from graph import Digraph, Node, WeightedEdge
 # do the graph's edges represent? Where are the distances
 # represented?
 #
-# Answer:
-#
+# Answer: Nodes are buildings on the map, while edges are the 
+# distances between them
+#  
 
 
 # Problem 2b: Implementing load_map
@@ -43,8 +45,21 @@ def load_map(map_filename):
         a Digraph representing the map
     """
 
-    # TODO
     print("Loading map from file...")
+    map = Digraph()
+    file = open(map_filename)
+    for row in file:
+        src = Node(row.split()[0])
+        dest = Node(row.split()[1])
+        if not map.has_node(src):
+            map.add_node(src)
+
+        if not map.has_node(dest):
+            map.add_node(dest)
+        map.add_edge(WeightedEdge(src,dest,row.split()[2],row.split()[3]))
+                
+    file.close()
+    return map
 
 # Problem 2c: Testing load_map
 # Include the lines used to test load_map below, but comment them out
@@ -95,8 +110,47 @@ def get_best_path(digraph, start, end, path, max_dist_outdoors, best_dist,
         If there exists no path that satisfies max_total_dist and
         max_dist_outdoors constraints, then return None.
     """
-    # TODO
-    pass
+    
+    if not path:
+        path = [[start],0,0]
+
+    if not digraph.has_node(start) or not digraph.has_node(end):
+        raise ValueError
+
+    elif start == end:
+        #print('found path: ',path)
+        if path[2] <= max_dist_outdoors:
+            if best_dist:
+                if path[1] <= best_dist:
+                    best_path = path[0]
+                    best_dist = path[1]
+            else:
+                best_path = path[0]
+                best_dist = path[1]
+
+    elif best_path and len(path[0]) > len(best_path):
+        pass
+
+    else:
+        #Check if Node has edges
+        if digraph.get_edges_for_node(start):
+            
+            #Get all Edges from Node
+            for edge in digraph.get_edges_for_node(start):
+                
+                #Check if Node not already visited
+                if edge.get_destination() not in path[0]:
+                    
+                    newPath = copy.deepcopy(path)
+
+                    #Add Node to path
+                    newPath[0].append(edge.get_destination())
+                    newPath[1] += edge.get_total_distance()
+                    newPath[2] += edge.get_outdoor_distance()
+
+                    best_path, best_dist = get_best_path(digraph,edge.get_destination(),end,newPath,max_dist_outdoors,best_dist,best_path)
+
+    return best_path, best_dist
 
 
 # Problem 3c: Implement directed_dfs
@@ -128,8 +182,16 @@ def directed_dfs(digraph, start, end, max_total_dist, max_dist_outdoors):
         If there exists no path that satisfies max_total_dist and
         max_dist_outdoors constraints, then raises a ValueError.
     """
-    # TODO
-    pass
+    best_path, best_dist = get_best_path(digraph,Node(start),Node(end),[],max_dist_outdoors,None,None)
+    
+    if not best_path:
+        raise ValueError
+
+    if best_dist <= max_total_dist:
+        return best_path
+    
+    raise ValueError 
+
 
 
 # ================================================================
@@ -140,7 +202,7 @@ class Ps2Test(unittest.TestCase):
     LARGE_DIST = 99999
 
     def setUp(self):
-        self.graph = load_map("mit_map.txt")
+        self.graph = load_map("MIT6_0002/ps2/mit_map.txt")
 
     def test_load_map_basic(self):
         self.assertTrue(isinstance(self.graph, Digraph))
@@ -218,3 +280,14 @@ class Ps2Test(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+    # TODO:
+    # fix                         ^^^^^^^^^^
+    # AttributeError: 'str' object has no attribute 'name'
+    # ----------------------------
+    # Expected:  ['32', '56']
+    # DFS:  [32, 56]
+
+    # print(load_map("MIT6_0002/ps2/test_load_map.txt"))
+    # print(directed_dfs(load_map("MIT6_0002/ps2/test_load_map.txt"),'a','c',500,2000))
+    #print(directed_dfs(load_map("MIT6_0002/ps2/mit_map.txt"),'12','62',500,175))
