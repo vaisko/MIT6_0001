@@ -1,7 +1,7 @@
 # 6.0002 Problem Set 5
 # Graph optimization
-# Name:
-# Collaborators:
+# Name: vaisko
+# Collaborators: vaisko.com
 # Time: previše
 
 #
@@ -114,42 +114,35 @@ def get_best_path(digraph, start, end, path, max_dist_outdoors, best_dist,
     if not path:
         path = [[start],0,0]
 
+    #check if nodes are valid
     if not digraph.has_node(start) or not digraph.has_node(end):
         raise ValueError
+    
+    #abort if path is longer than best or exceeds max_dist_outdoors
+    elif best_path and path[1] > best_dist or path[2] > max_dist_outdoors:
+        pass
+
+    elif best_path and path[1] > best_dist:
+        print('Aborting search...',path[0],'is longer than best path',best_path)
 
     elif start == end:
-        #print('found path: ',path)
-        if path[2] <= max_dist_outdoors:
-            if best_dist:
-                if path[1] <= best_dist:
-                    best_path = path[0]
-                    best_dist = path[1]
-            else:
-                best_path = path[0]
-                best_dist = path[1]
-
-    elif best_path and len(path[0]) > len(best_path):
-        pass
+        best_path = path[0]
+        best_dist = path[1]
 
     else:
         #Check if Node has edges
         if digraph.get_edges_for_node(start):
-            
             #Get all Edges from Node
             for edge in digraph.get_edges_for_node(start):
-                
                 #Check if Node not already visited
                 if edge.get_destination() not in path[0]:
-                    
                     newPath = copy.deepcopy(path)
-
                     #Add Node to path
                     newPath[0].append(edge.get_destination())
                     newPath[1] += edge.get_total_distance()
                     newPath[2] += edge.get_outdoor_distance()
-
                     best_path, best_dist = get_best_path(digraph,edge.get_destination(),end,newPath,max_dist_outdoors,best_dist,best_path)
-
+    
     return best_path, best_dist
 
 
@@ -188,7 +181,10 @@ def directed_dfs(digraph, start, end, max_total_dist, max_dist_outdoors):
         raise ValueError
 
     if best_dist <= max_total_dist:
-        return best_path
+        return_path = []
+        for node in best_path:
+            return_path.append(node.get_name())
+        return return_path
     
     raise ValueError 
 
@@ -280,14 +276,6 @@ class Ps2Test(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-
-    # TODO:
-    # fix                         ^^^^^^^^^^
-    # AttributeError: 'str' object has no attribute 'name'
-    # ----------------------------
-    # Expected:  ['32', '56']
-    # DFS:  [32, 56]
-
-    # print(load_map("MIT6_0002/ps2/test_load_map.txt"))
-    # print(directed_dfs(load_map("MIT6_0002/ps2/test_load_map.txt"),'a','c',500,2000))
-    #print(directed_dfs(load_map("MIT6_0002/ps2/mit_map.txt"),'12','62',500,175))
+    #print(load_map("MIT6_0002/ps2/test_load_map.txt"))
+    #print(directed_dfs(load_map("MIT6_0002/ps2/test_load_map.txt"),'a','c',500,2000))
+    #print(directed_dfs(load_map("MIT6_0002/ps2/mit_map.txt"),'12','62',1000,150))
