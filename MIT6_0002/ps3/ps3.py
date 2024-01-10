@@ -105,17 +105,13 @@ class RectangularRoom(object):
               If the capacity exceeds the amount of dirt on the tile, mark it as 0.
         """
 
-        tile = (math.floor(pos.x),math.floor(pos.y))
+        tile = (math.floor(pos.get_x()),math.floor(pos.get_y()))
 
         if tile in self.tile_map:
             if capacity>self.tile_map.get(tile):
                 self.tile_map[tile] = 0
             else:
                 self.tile_map[tile] -= capacity
-        
-        # else:
-        #     self.tile_map[tile] = self.dirt_amount-capacity
-            
 
 
     def is_tile_cleaned(self, m, n):
@@ -159,7 +155,7 @@ class RectangularRoom(object):
         pos: a Position object.
         Returns: True if pos is in the room, False otherwise.
         """
-        if pos.x >= 0 and pos.y >= 0 and math.floor(pos.x) < self.width and math.floor(pos.y) < self.height:
+        if pos.get_x() >= 0 and pos.get_y() >= 0 and math.floor(pos.get_x()) < self.width and math.floor(pos.get_y()) < self.height:
             return True
         return False
         
@@ -226,7 +222,7 @@ class Robot(object):
         self.speed = speed
         self.capacity = capacity
 
-        self.position = Position.__init__(self, random.randint(0,self.room.width)/10, random.randint(0,self.room.height)/10)
+        self.position = room.get_random_position()
         self.direction = random.randint(0,3600)/10
 
     def get_robot_position(self):
@@ -278,7 +274,7 @@ class EmptyRoom(RectangularRoom):
         """
         Returns: an integer; the total number of tiles in the room
         """
-        raise NotImplementedError
+        return len(self.tile_map.keys())
         
     def is_position_valid(self, pos):
         """
@@ -286,13 +282,13 @@ class EmptyRoom(RectangularRoom):
         
         Returns: True if pos is in the room, False otherwise.
         """
-        raise NotImplementedError
+        return self.is_position_in_room(pos)
         
     def get_random_position(self):
         """
         Returns: a Position object; a valid random position (inside the room).
         """
-        raise NotImplementedError
+        return Position(random.randint(0,self.width*10-1)/10, random.randint(0,self.height*10-1)/10)
 
 class FurnishedRoom(RectangularRoom):
     """
@@ -339,7 +335,9 @@ class FurnishedRoom(RectangularRoom):
         """
         Return True if tile (m, n) is furnished.
         """
-        raise NotImplementedError
+        if (m, n) in self.furniture_tiles:
+            return True
+        return False
         
     def is_position_furnished(self, pos):
         """
@@ -347,27 +345,45 @@ class FurnishedRoom(RectangularRoom):
 
         Returns True if pos is furnished and False otherwise
         """
-        raise NotImplementedError
-        
+        return self.is_tile_furnished(math.floor(pos.get_x()), math.floor(pos.get_y()))
+
     def is_position_valid(self, pos):
         """
         pos: a Position object.
         
         returns: True if pos is in the room and is unfurnished, False otherwise.
         """
-        raise NotImplementedError
+        if self.is_position_in_room(pos) and not self.is_position_furnished(pos):
+            return True
+        return False
         
     def get_num_tiles(self):
         """
         Returns: an integer; the total number of tiles in the room that can be accessed.
         """
-        raise NotImplementedError
+        
+        all_tiles = self.tile_map.keys()
+        
+        num_of_tiles = 0
+
+        for tile in all_tiles:
+            if not self.is_tile_furnished(tile[0],tile[1]):
+                num_of_tiles += 1
+        
+        return num_of_tiles
         
     def get_random_position(self):
         """
         Returns: a Position object; a valid random position (inside the room and not in a furnished area).
         """
-        raise NotImplementedError
+
+        pos = Position(random.randint(0,self.width*10-1)/10, random.randint(0,self.height*10-1)/10)
+        
+        if not self.is_position_valid(pos):
+            pos = self.get_random_position()
+        
+        return pos
+
 
 # === Problem 3
 class StandardRobot(Robot):
