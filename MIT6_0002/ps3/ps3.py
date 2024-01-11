@@ -219,7 +219,7 @@ class Robot(object):
                   in a single time-step
         """
         self.room = room
-        self.speed = speed
+        self.speed = float(speed)
         self.capacity = capacity
 
         self.position = room.get_random_position()
@@ -402,10 +402,19 @@ class StandardRobot(Robot):
         rotate once to a random new direction, and stay stationary) and clean the dirt on the tile
         by its given capacity. 
         """
-        raise NotImplementedError
+        current_pos = self.get_robot_position()
+        new_pos = current_pos.get_new_position(self.get_robot_direction(),self.speed)
+        
+        if self.room.is_position_valid(new_pos):
+            self.set_robot_position(new_pos)
+            self.room.clean_tile_at_position(new_pos,self.capacity)
+        
+        else:
+            self.set_robot_direction(random.randint(0,3600)/10)
+
 
 # Uncomment this line to see your implementation of StandardRobot in action!
-#test_robot_movement(StandardRobot, EmptyRoom)
+test_robot_movement(StandardRobot, EmptyRoom)
 #test_robot_movement(StandardRobot, FurnishedRoom)
 
 # === Problem 4
