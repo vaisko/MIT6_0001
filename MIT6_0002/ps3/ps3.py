@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 # Problem Set 3: Simulating robots
-# Name:
-# Collaborators (discussion):
-# Time:
+# Name: vaisko
+# Collaborators (discussion): himslef
+# Time: not that long tbh
 
 import math
 import random
@@ -223,7 +223,7 @@ class Robot(object):
         self.capacity = capacity
 
         self.position = room.get_random_position()
-        self.direction = random.randint(0,3600)/10
+        self.direction = random.randint(0,3599)/10
 
     def get_robot_position(self):
         """
@@ -410,7 +410,7 @@ class StandardRobot(Robot):
             self.room.clean_tile_at_position(new_pos,self.capacity)
         
         else:
-            self.set_robot_direction(random.randint(0,3600)/10)
+            self.set_robot_direction(random.randint(0,3599)/10)
 
 
 # Uncomment this line to see your implementation of StandardRobot in action!
@@ -456,7 +456,7 @@ class FaultyRobot(Robot):
         move there if it can, pick a new direction and stay stationary if it can't)
         """
         if self.gets_faulty():
-            self.set_robot_direction(random.randint(0,3600)/10)
+            self.set_robot_direction(random.randint(0,3599)/10)
         else:
             StandardRobot.update_position_and_clean(self)
         
@@ -485,7 +485,27 @@ def run_simulation(num_robots, speed, capacity, width, height, dirt_amount, min_
     robot_type: class of robot to be instantiated (e.g. StandardRobot or
                 FaultyRobot)
     """
-    raise NotImplementedError
+    
+    trial_results = []
+
+    for i in range(num_trials):
+
+        ticks = 0
+        room = EmptyRoom(width, height, dirt_amount)
+        all_robots = []
+
+        for _ in range(num_robots):
+            new_robot = robot_type(room, speed, capacity)
+            all_robots.append(new_robot)
+
+        while room.get_num_cleaned_tiles() / room.get_num_tiles() < min_coverage:
+            for robot in all_robots:
+                robot.update_position_and_clean()
+            ticks += 1
+            
+        trial_results.append(ticks)
+
+    return sum(trial_results)/len(trial_results)
 
 
 # print ('avg time steps: ' + str(run_simulation(1, 1.0, 1, 5, 5, 3, 1.0, 50, StandardRobot)))
@@ -500,12 +520,18 @@ def run_simulation(num_robots, speed, capacity, width, height, dirt_amount, min_
 #
 # 1)How does the performance of the two robot types compare when cleaning 80%
 #       of a 20x20 room?
-#
+#   
+#    It takes the faulty robots about 20% more time to clean the room, with that 
+#    difference getting smaller and smaller as more robots are added to the simulation.
 #
 # 2) How does the performance of the two robot types compare when two of each
 #       robot cleans 80% of rooms with dimensions 
 #       10x30, 20x15, 25x12, and 50x6?
-#
+#   
+#    The differences between the performances are the least pronounced when the aspect ratio is square or 2:1. 
+#    The more extreme the aspect ratio, the worst the performance of the faulty robot is compared to the standard one.
+#    I assume this is because of the robots having to make more turns in narrower spaces, as there is a greater probability
+#    of there being less steps between rotations.
 #
 
 def show_plot_compare_strategies(title, x_label, y_label):
@@ -536,7 +562,7 @@ def show_plot_room_shape(title, x_label, y_label):
     times1 = []
     times2 = []
     for width in [10, 20, 25, 50]:
-        height = 300/width
+        height = int(300/width)
         print ("Plotting cleaning time for a room of width:", width, "by height:", height)
         aspect_ratios.append(float(width) / height)
         times1.append(run_simulation(2, 1.0, 1, width, height, 3, 0.8, 200, StandardRobot))
