@@ -414,7 +414,7 @@ class StandardRobot(Robot):
 
 
 # Uncomment this line to see your implementation of StandardRobot in action!
-test_robot_movement(StandardRobot, EmptyRoom)
+#test_robot_movement(StandardRobot, EmptyRoom)
 #test_robot_movement(StandardRobot, FurnishedRoom)
 
 # === Problem 4
@@ -455,7 +455,10 @@ class FaultyRobot(Robot):
         StandardRobot at this time-step (checking if it can move to a new position,
         move there if it can, pick a new direction and stay stationary if it can't)
         """
-        raise NotImplementedError
+        if self.gets_faulty():
+            self.set_robot_direction(random.randint(0,3600)/10)
+        else:
+            StandardRobot.update_position_and_clean(self)
         
     
 #test_robot_movement(FaultyRobot, EmptyRoom)
