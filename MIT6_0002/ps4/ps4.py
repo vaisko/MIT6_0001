@@ -324,7 +324,13 @@ def calc_pop_std(populations, t):
         float: the standard deviation of populations across different trials at
              a specific time step
     """
-    pass  # TODO
+    avg_pop = calc_pop_avg(populations, t)
+    avg_distances = []
+    
+    for i in range(len(populations)):
+        avg_distances.append((populations[i][t]-avg_pop)**2)
+    
+    return math.sqrt(sum(avg_distances)/len(avg_distances))
 
 
 def calc_95_ci(populations, t):
@@ -348,7 +354,18 @@ def calc_95_ci(populations, t):
 
         I.e., you should return a tuple containing (mean, width)
     """
-    pass  # TODO
+    std = calc_pop_std(populations, t)
+
+    avg_values = []
+    for i in range(len(populations)):
+        avg_values.append(populations[i][t])
+
+    mean = sum(avg_values)/len(avg_values)
+
+    sem = std / (math.sqrt(len(populations)))
+
+    return (mean,1.96*sem)
+        
 
 
 ##########################
